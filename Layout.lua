@@ -70,16 +70,17 @@ ns.NAMES = {
 -- outer, pinky, ring, middle, index, thumb):
 --      row 1:            a-1   a-2   a-3
 --      row 2:      c-1   c-2   c-3   c-4   c-5
---      row 3: s-1  s-2   s-3   s-4   s-5   s-6
+--      row 3: Esc  s-1   s-2   s-3   s-4   s-5
 --      row 4: 1    2     3     4     5     6
 --      row 5:      7     8     Tab   Spc
+-- ESCAPE cannot be bound in WoW; that key simply stays Escape (menu / cancel) and is never claimed.
 ns.DEFAULT_KEYS = {
     -- row 1 (top)
     [8]  = "ALT-1",   [12] = "ALT-2",   [17] = "ALT-3",
     -- row 2
     [3]  = "CTRL-1",  [7]  = "CTRL-2",  [11] = "CTRL-3",  [16] = "CTRL-4",  [19] = "CTRL-5",
     -- row 3
-    [4]  = "SHIFT-1", [2]  = "SHIFT-2", [6]  = "SHIFT-3", [10] = "SHIFT-4", [15] = "SHIFT-5", [42] = "SHIFT-6",
+    [4]  = "ESCAPE",  [2]  = "SHIFT-1", [6]  = "SHIFT-2", [10] = "SHIFT-3", [15] = "SHIFT-4", [42] = "SHIFT-5",
     -- row 4 (home row)
     [36] = "1",       [1]  = "2",       [5]  = "3",       [9]  = "4",       [14] = "5",       [43] = "6",
     -- row 5 (bottom)

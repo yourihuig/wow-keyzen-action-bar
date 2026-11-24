@@ -106,13 +106,14 @@ As you look at the keypad (left hand on the device, thumb cluster and stick on t
   .       .        .        .        .        .        .      UP       .
   .       .      ALT-1    ALT-2    ALT-3      .      LEFT   ALT-4    RIGHT
   .     CTRL-1   CTRL-2   CTRL-3   CTRL-4   CTRL-5     .     DOWN      .
- SHIFT-1 SHIFT-2 SHIFT-3  SHIFT-4  SHIFT-5  SHIFT-6  (stick)   .     ALT-5
+ ESC    SHIFT-1  SHIFT-2  SHIFT-3  SHIFT-4  SHIFT-5  (stick)   .     ALT-5
   1       2        3        4        5        6      (stick)   .     ALT-6
   .       7        8       TAB     SPACE      .      ALT-7     .       .
 ```
 
 The profile-switch button and the thumbstick (WASD movement) are left alone by the addon and
-not drawn. The same table lives in `Layout.lua` (`ns.DEFAULT_KEYS`) and is what
+not drawn. Escape is shown on its key but never claimed, since WoW does not allow binding it;
+it keeps opening the menu and cancelling casts. The same table lives in `Layout.lua` (`ns.DEFAULT_KEYS`) and is what
 `tools/make-azeron-profile.js` writes into the Azeron profile.
 
 ## For developers

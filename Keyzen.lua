@@ -7,7 +7,8 @@ local ADDON, ns = ...
 local Keyzen = CreateFrame("Frame", "KeyzenFrame", UIParent)
 ns.frame = Keyzen
 
-local BUTTON_PREFIX = "KeyzenButton"
+local BUTTON_PREFIX = "KeyzenButton"   -- visible button: mouse clicks, acts on release
+local PROXY_PREFIX  = "KeyzenKey"      -- hidden secure button: what the keybind clicks
 local db, cdb                     -- account settings / per-character slots
 local buttons = {}                -- code -> button frame
 local editMode = false            -- Blizzard Edit Mode is open
@@ -143,7 +144,8 @@ local function CVarBool(name, default)
     return default
 end
 
-local function UseKeyDown() return CVarBool("ActionButtonUseKeyDown", false) end
+-- Keys WoW refuses to bind; they are shown but never claimed.
+local UNBINDABLE = { ESCAPE = true }
 
 -- Blizzard's "Lock Action Bars": dragging an action off a bar needs the pickup modifier.
 local function CanPickUp()
@@ -278,26 +280,32 @@ end
 -------------------------------------------------------------------------------
 -- Button visuals and secure attributes
 -------------------------------------------------------------------------------
-local function ApplyAttributes(btn)
-    -- Only called out of combat. The plain "type" attribute is used (not "type1") so that
-    -- modified bindings such as SHIFT-1 still resolve; "*type2" = "" keeps right-click inert.
-    local slot = cdb.slots[btn.code]
-    btn:SetAttribute("type", nil)
-    btn:SetAttribute("*type2", "")
-    btn:SetAttribute("spell", nil)
-    btn:SetAttribute("item", nil)
-    btn:SetAttribute("macro", nil)
+local function ApplyAttributesTo(frame, slot)
+    -- The plain "type" attribute is used (not "type1") so that modified bindings such as
+    -- SHIFT-1 still resolve; "*type2" = "" keeps right-click inert.
+    frame:SetAttribute("type", nil)
+    frame:SetAttribute("*type2", "")
+    frame:SetAttribute("spell", nil)
+    frame:SetAttribute("item", nil)
+    frame:SetAttribute("macro", nil)
     if not slot then return end
     if slot.kind == "spell" then
-        btn:SetAttribute("type", "spell")
-        btn:SetAttribute("spell", slot.id)
+        frame:SetAttribute("type", "spell")
+        frame:SetAttribute("spell", slot.id)
     elseif slot.kind == "item" then
-        btn:SetAttribute("type", "item")
-        btn:SetAttribute("item", "item:" .. slot.id)
+        frame:SetAttribute("type", "item")
+        frame:SetAttribute("item", "item:" .. slot.id)
     elseif slot.kind == "macro" then
-        btn:SetAttribute("type", "macro")
-        btn:SetAttribute("macro", slot.name)
+        frame:SetAttribute("type", "macro")
+        frame:SetAttribute("macro", slot.name)
     end
+end
+
+local function ApplyAttributes(btn)
+    -- Only called out of combat. The visible button and its key proxy carry the same action.
+    local slot = cdb.slots[btn.code]
+    ApplyAttributesTo(btn, slot)
+    ApplyAttributesTo(btn.proxy, slot)
 end
 
 local function UpdateCooldown(btn)
@@ -386,8 +394,9 @@ local function ApplyBindings()
     if db.hidden then return end
     for _, code in ipairs(ns.BUTTON_CODES) do
         local key = GetKey(code)
-        if key and IsCodeShown(code) and (db.bindEmpty or cdb.slots[code]) then
-            SetOverrideBindingClick(Keyzen, true, key, BUTTON_PREFIX .. code, "LeftButton")
+        if key and not UNBINDABLE[key] and IsCodeShown(code) and (db.bindEmpty or cdb.slots[code]) then
+            -- the key clicks the hidden proxy, which honours "cast on key down" like a Blizzard bar
+            SetOverrideBindingClick(Keyzen, true, key, PROXY_PREFIX .. code, "LeftButton")
         end
     end
 end
@@ -395,11 +404,7 @@ end
 local function ApplyAttributesAll()
     if InCombatLockdown() then attributesDirty = true; return end
     attributesDirty = false
-    local down = UseKeyDown()
-    for _, btn in pairs(buttons) do
-        ApplyAttributes(btn)
-        btn:RegisterForClicks(down and "AnyDown" or "AnyUp")
-    end
+    for _, btn in pairs(buttons) do ApplyAttributes(btn) end
 end
 
 local function Refresh()
@@ -524,8 +529,23 @@ local function CreateKeyButton(code)
     local btn = CreateFrame("CheckButton", BUTTON_PREFIX .. code, Keyzen, "SecureActionButtonTemplate")
     btn.code = code
     btn:RegisterForDrag("LeftButton")
+    -- Mouse clicks act on release, exactly like Blizzard's bars treat a real mouse press. A press
+    -- that turns into a drag therefore never casts. Only the secure code can flag a "real" mouse
+    -- press, so the addon forces it with the useOnKeyDown attribute instead.
     btn:RegisterForClicks("AnyUp")
+    btn:SetAttribute("useOnKeyDown", false)
     btn:EnableMouse(true)
+
+    -- Hidden proxy for the keybind: follows the "cast on key down" setting like a Blizzard bar
+    -- and shows the press on the visible button.
+    local proxy = CreateFrame("Button", PROXY_PREFIX .. code, Keyzen, "SecureActionButtonTemplate")
+    proxy:RegisterForClicks("AnyDown", "AnyUp")
+    proxy:SetSize(1, 1)
+    proxy:SetPoint("CENTER", btn, "CENTER")
+    proxy:EnableMouse(false)
+    proxy:SetScript("PreClick", function(_, _, down) if down then btn:SetButtonState("PUSHED") end end)
+    proxy:SetScript("PostClick", function(_, _, down) if not down then btn:SetButtonState("NORMAL") end end)
+    btn.proxy = proxy
 
     -- slot art behind the icon (what you see on an empty button)
     btn.SlotBackground = btn:CreateTexture(nil, "BACKGROUND", nil, -1)
@@ -595,7 +615,7 @@ local function CreateKeyButton(code)
     btn:SetScript("PostClick", function(self, button, down)
         if self.placing then
             self.placing = nil
-            if not PlaceFromCursor(self) and not InCombatLockdown() then ApplyAttributes(self) end
+            if not PlaceFromCursor(self) and not InCombatLockdown() then ApplyAttributesTo(self, cdb.slots[self.code]) end
         end
         self:SetChecked(false)
     end)
@@ -969,8 +989,7 @@ events.SPELLS_CHANGED = RefreshRanks
 events.LEARNED_SPELL_IN_TAB = RefreshRanks
 events.UPDATE_MACROS = function() ApplyAttributesAll(); UpdateAll() end
 events.CVAR_UPDATE = function(cvar)
-    if cvar == "ActionButtonUseKeyDown" then ApplyAttributesAll()
-    elseif cvar == "countdownForCooldowns" then
+    if cvar == "countdownForCooldowns" then
         for _, btn in pairs(buttons) do btn.cooldown:SetHideCountdownNumbers(not CVarBool("countdownForCooldowns", true)) end
     end
 end
