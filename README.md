@@ -40,7 +40,7 @@ exactly like dropping something on a Blizzard action bar:
 * Drag something off a key to remove it. If *Lock Action Bars* is enabled in the game
   options, hold the pickup modifier (Shift by default), the same as for the Blizzard bars.
 
-The key text in the corner (`1`, `s-1`, `c-1`, `a-1`, `Tab`, `Spc`) tells you which Keyzen
+The key text in the corner (`1`, `s-1`, `c-1`, `a-1`, `Esc`, `Tab`, `Spc`) tells you which Keyzen
 button sends that key. Press it on the Keyzen and the spell is cast.
 
 ### 2. Place and size the frame in Edit Mode
@@ -107,8 +107,8 @@ As you look at the keypad (left hand on the device, thumb cluster and stick on t
   .       .      ALT-1    ALT-2    ALT-3      .      LEFT   ALT-4    RIGHT
   .     CTRL-1   CTRL-2   CTRL-3   CTRL-4   CTRL-5     .     DOWN      .
  ESC    SHIFT-1  SHIFT-2  SHIFT-3  SHIFT-4  SHIFT-5  (stick)   .     ALT-5
-  1       2        3        4        5        6      (stick)   .     ALT-6
-  .       7        8       TAB     SPACE      .      ALT-7     .       .
+ TAB      1        2        3        4        5      (stick)   .     ALT-6
+  .       6        7        8      SPACE      .      ALT-7     .       .
 ```
 
 The profile-switch button and the thumbstick (WASD movement) are left alone by the addon and

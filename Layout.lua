@@ -71,8 +71,8 @@ ns.NAMES = {
 --      row 1:            a-1   a-2   a-3
 --      row 2:      c-1   c-2   c-3   c-4   c-5
 --      row 3: Esc  s-1   s-2   s-3   s-4   s-5
---      row 4: 1    2     3     4     5     6
---      row 5:      7     8     Tab   Spc
+--      row 4: Tab  1     2     3     4     5
+--      row 5:      6     7     8     Spc
 -- ESCAPE cannot be bound in WoW; that key simply stays Escape (menu / cancel) and is never claimed.
 ns.DEFAULT_KEYS = {
     -- row 1 (top)
@@ -82,9 +82,9 @@ ns.DEFAULT_KEYS = {
     -- row 3
     [4]  = "ESCAPE",  [2]  = "SHIFT-1", [6]  = "SHIFT-2", [10] = "SHIFT-3", [15] = "SHIFT-4", [42] = "SHIFT-5",
     -- row 4 (home row)
-    [36] = "1",       [1]  = "2",       [5]  = "3",       [9]  = "4",       [14] = "5",       [43] = "6",
+    [36] = "TAB",     [1]  = "1",       [5]  = "2",       [9]  = "3",       [14] = "4",       [43] = "5",
     -- row 5 (bottom)
-    [37] = "7",       [38] = "8",       [13] = "TAB",     [18] = "SPACE",
+    [37] = "6",       [38] = "7",       [13] = "8",       [18] = "SPACE",
     -- d-pad
     [28] = "UP",      [29] = "LEFT",    [30] = "DOWN",    [31] = "RIGHT",   [22] = "ALT-4",
     -- keys around the stick
