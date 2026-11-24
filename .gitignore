@@ -1,0 +1,4 @@
+# personal Azeron profile backups (not part of the addon)
+backup/
+node_modules/
+*.zip

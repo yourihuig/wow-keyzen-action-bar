@@ -1,0 +1,13 @@
+## Interface: 16001, 120007, 120100, 120105
+## Title: |cff7be5e0Keyzen|r
+## Notes: On-screen Azeron Keyzen layout. Drag spells, items and macros onto the keys and they become your keybinds.
+## Author: Youri Huig
+## Version: 0.1.0
+## Category: Action Bars
+## SavedVariables: KeyzenDB
+## SavedVariablesPerCharacter: KeyzenCharDB
+## IconTexture: Interface\Icons\INV_Misc_Gear_01
+
+Layout.lua
+Keyzen.lua
+Options.lua
