@@ -157,7 +157,11 @@ local function SliderRow(parent, label, minV, maxV, step, get, set, fmt)
     row.Label:SetText(label)
 
     local steps = math.floor((maxV - minV) / step + 0.5)
-    local function format(v) return fmt:format(RoundToStep(v, minV, step)) end
+    local function format(v)
+        local r = RoundToStep(v, minV, step)
+        if type(fmt) == "function" then return fmt(r) end
+        return fmt:format(r)
+    end
 
     if MinimalSliderWithSteppersMixin and MinimalSliderWithSteppersMixin.Label then
         local slider = CreateFrame("Frame", nil, row, "MinimalSliderWithSteppersTemplate")
@@ -177,7 +181,7 @@ local function SliderRow(parent, label, minV, maxV, step, get, set, fmt)
             if not row.loading then set(RoundToStep(v, minV, step)) end
         end, row)
     else
-        local s = Slider(row, label, minV, maxV, step, get, set, fmt, 200)
+        local s = Slider(row, label, minV, maxV, step, get, set, type(fmt) == "string" and fmt or "%.2f", 200)
         s:SetPoint("LEFT", row.Label, "RIGHT", 5, 0)
         row.Refresh = function() s:GetScript("OnShow")(s) end
     end
@@ -268,7 +272,8 @@ local function CreateEditDialog()
     Add(SliderRow(dialog, "Row Padding", 0, 24, 0.5,
         function() return db.rowGap end, function(v) db.rowGap = v; ns.Layout() end, "%.1f"))
     Add(SliderRow(dialog, "Opacity", 0.1, 1, 0.05,
-        function() return db.alpha end, function(v) db.alpha = v; ns.Layout() end, "%.0f%%"))
+        function() return db.alpha end, function(v) db.alpha = v; ns.Layout() end,
+        function(v) return ("%d%%"):format(math.floor(v * 100 + 0.5)) end))
     for _, section in ipairs(ns.SECTIONS) do
         Add(CheckRow(dialog, "Show " .. section.label, nil,
             function() return db.sections[section.key] ~= false end,
