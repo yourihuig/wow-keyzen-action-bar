@@ -147,6 +147,13 @@ end
 -- Keys WoW refuses to bind; they are shown but never claimed.
 local UNBINDABLE = { ESCAPE = true }
 
+-- Midnight-era clients (Forever included) hand addons "secret" values for combat-sensitive
+-- data such as cooldowns. A secret value can be passed on to widgets but any comparison or
+-- arithmetic on it is a Lua error, so every such value is checked before it is inspected.
+local function IsSecret(v)
+    return issecretvalue ~= nil and issecretvalue(v) or false
+end
+
 -- Blizzard's "Lock Action Bars": dragging an action off a bar needs the pickup modifier.
 local function CanPickUp()
     if editMode then return true end
@@ -314,6 +321,15 @@ local function UpdateCooldown(btn)
     local start, duration, enable, modRate
     if slot.kind == "spell" then start, duration, enable, modRate = SpellCooldown(slot.id)
     else start, duration, enable = ItemCooldown(slot.id) end
+    if IsSecret(start) or IsSecret(duration) or IsSecret(enable) or IsSecret(modRate) then
+        -- In combat the numbers are secret: they cannot be inspected, only shown.
+        if not IsSecret(modRate) and modRate == nil then
+            btn.cooldown:SetCooldown(start, duration)
+        else
+            btn.cooldown:SetCooldown(start, duration, modRate)
+        end
+        return
+    end
     if enable == false or enable == 0 or not start or not duration or duration <= 0 then
         btn.cooldown:Clear()
     else
@@ -337,8 +353,13 @@ local function UpdateState(btn)
         usable, noPower = ItemUsable(slot.id)
         inRange = ItemInRange(slot.id)
         local count = ItemCount(slot.id)
-        btn.Count:SetText(count > 1 and count or "")
+        if IsSecret(count) then btn.Count:SetText("")
+        else btn.Count:SetText(count > 1 and count or "") end
     end
+    -- secret in combat: leave the colouring alone rather than inspect the values
+    if IsSecret(usable) then usable = true end
+    if IsSecret(noPower) then noPower = false end
+    if IsSecret(inRange) then inRange = nil end
     local icon = btn.icon
     if usable then icon:SetVertexColor(1, 1, 1)
     elseif noPower then icon:SetVertexColor(0.5, 0.5, 1.0)
